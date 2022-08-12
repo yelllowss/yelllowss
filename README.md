@@ -1,0 +1,3 @@
+- 👋 Hi, I’m @yelllowss
+- 👀 I’m interested in computers :)
+- 🌱 I’m currently studying Computer Science and Game Development!
