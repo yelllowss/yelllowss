@@ -1,0 +1,182 @@
+-------- Madlib.java --------
+import java.util.*;
+
+public class MadLib extends ConsoleProgram
+{
+	// Private constants
+	private static final char PLACEHOLDER_START_CHARACTER = '[';
+	private static final char PLACEHOLDER_END_CHARACTER = ']';
+	
+	// File reader to get the template from the madlib file
+	private MadLibFileReader madLibFileReader = new MadLibFileReader();
+	
+	public void run()
+	{
+	    System.out.println("Welcome to the Mad Lib Generator!");
+		String template = madLibFileReader.getMadLibTemplate();
+		
+		String madLibStory = replaceAllPlaceholders(template);
+		
+		System.out.println();
+		System.out.println("Your Mad Lib Story:");
+		System.out.println(madLibStory);
+	}
+	
+	// Return an ArrayList holding every placeholder in the template, in the order they appear.
+	// Placeholders will be stored in the form "[Adjective]", including the "[ ]"
+	private ArrayList<String> getPlaceholders(String template)
+	{
+		ArrayList<String> placeholders = new ArrayList<String>();
+		
+		for(int a = 0; a < template.length(); a++)
+		{
+			char ch = template.charAt(a);
+			
+			// Found the start of a placeholder
+			if(ch == PLACEHOLDER_START_CHARACTER)
+			{
+				// Keep iterating through the template to build up the current placeholder
+				String currentPlaceholder = "" + ch;
+				int placeholderIndex = a + 1;
+				while(ch != PLACEHOLDER_END_CHARACTER && placeholderIndex < template.length())
+				{
+					ch = template.charAt(placeholderIndex);
+					currentPlaceholder += ch;
+					placeholderIndex++;
+				}
+			
+				if(ch != PLACEHOLDER_END_CHARACTER)
+				{
+		
+					return null;
+				}
+				
+				a = placeholderIndex - 1;
+				
+				// Add the placeholder to the ArrayList
+				placeholders.add(currentPlaceholder);
+			}
+		}
+		
+		return placeholders;
+	}
+	
+	// Asks user to input replacement words for each placeholder in placeholders
+	// Returns an ArrayList containing each replacement  wordin the order they were input
+	private ArrayList<String> getReplacements(ArrayList<String> placeholders)
+	{
+		ArrayList<String> replacements = new ArrayList<String>();
+		for(String placeholder : placeholders)
+		{
+			String replacement = getReplacementForPlaceholder(placeholder);
+			replacements.add(replacement);
+		}
+		return replacements;
+	}
+	
+	// Asks user to input a single replacement word for the placeholder 
+	private String getReplacementForPlaceholder(String placeholder)
+	{
+		String placeholderPrompt = placeholder.substring(1, placeholder.length() - 1);
+		
+		if(placeholderPrompt.length() == 0)
+		{
+		    return "";
+		}
+		
+		if(isVowel(placeholderPrompt.charAt(0)))
+		{
+		    return readLine("Enter an " + placeholderPrompt + ": ");
+		}
+		else
+		{
+		    return readLine("Enter a " + placeholderPrompt + ": ");
+		}
+	}
+	
+	// Replaces the first instance of placeholder in the template with the replacement String
+	// Returns a new String that is the result of this replacement
+	// If placeholder does not exist in the template, the template passed in is returned
+	private String replacePlaceholder(String template, String placeholder, String replacement)
+	{
+	    int index = template.indexOf(placeholder);
+	    if(index != -1)
+	    {
+	        template = template.substring(0, index) + replacement + template.substring(index + placeholder.length());
+	    }
+		return template;
+	}
+	
+	// Asks the user to input replacement Strings for each placeholder in the template
+	// Replaces each placeholder with the corresponding replacement
+	// Returns the resulting Madlib
+	private String replaceAllPlaceholders(String template)
+	{
+		ArrayList<String> placeholders = getPlaceholders(template);
+		ArrayList<String> replacements = getReplacements(placeholders);
+		for(int i = 0; i < placeholders.size(); i++)
+		{
+			template = replacePlaceholder(template, placeholders.get(i), replacements.get(i));
+		}
+		return template;
+	}
+	
+	// Return whether the character ch is a vowel
+	private boolean isVowel(char ch)
+	{
+	    return "AEIOUaeiou".indexOf(ch) != -1;
+	}
+}
+
+
+------- MadLibFileReader.java --------
+
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+// This is the MadLibFileReader class
+// It reads in a madlib text file and converts it into a Java String
+// Feel free to explore this code, it uses the Java Files class
+// to read in a Mad Lib template from the "madlib.txt" file.
+// DO NOT CHANGE THIS CODE, the program may not work if you do.
+public class MadLibFileReader 
+{
+	private static final String FILENAME = "madlib.txt";
+	
+	private String template;
+	
+	public MadLibFileReader()
+	{
+		template = loadTemplate(FILENAME);
+	}
+	
+	public String getMadLibTemplate()
+	{
+		return template;
+	}
+	
+	private String loadTemplate(String filename)
+	{
+		String result = "";
+		
+		// Try to run the following code, but there may be errors
+	    // when reading the file.
+		try {
+			// Read every byte of data in the file, and convert all bytes
+			// to a standard Unicode String
+			byte[] encoded = Files.readAllBytes(Paths.get(filename));
+			result = new String(encoded, StandardCharsets.UTF_8);
+		} 
+		// If there was an error reading the file, this catch clause will execute.
+		catch (IOException e) {
+			System.out.println("There was an error while reading the file: " + filename);
+			e.printStackTrace();
+		}
+		
+		// Return the result
+		return result;
+	}
+}
